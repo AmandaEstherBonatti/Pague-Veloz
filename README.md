@@ -576,12 +576,6 @@ Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalh
 
 ---
 
-## 👥 Autores
-
-- **Equipe PagueVeloz** - *Desenvolvimento inicial*
-
----
-
 ## 🙏 Agradecimentos
 
 - Comunidade .NET
@@ -590,10 +584,35 @@ Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalh
 
 ---
 
+## 📦 Preparação para Submissão
+
+### Anonimização da Solução
+
+Antes de submeter a solução, certifique-se de remover todas as informações pessoais:
+
+1. **Arquivos de código**: Remova comentários com nomes, emails ou informações pessoais
+2. **Documentação**: Verifique o README.md e outros arquivos de documentação
+3. **Configuração Git**: Remova informações de autoria do `.git/config` (se existir)
+4. **Comentários automáticos**: Remova comentários adicionados automaticamente por editores
+5. **Metadados**: Verifique arquivos `.csproj.user`, `launchSettings.json` e similares
+
+### Gerar Arquivo ZIP Anonimizado
+
+Para gerar um arquivo ZIP anonimizado usando Git:
+
+```bash
+# Na raiz do repositório
+git archive --format=zip --output=./pagueveloz-challenge.zip HEAD
+```
+
+O arquivo `pagueveloz-challenge.zip` será criado sem informações do histórico Git.
+
+**Nota**: Certifique-se de que todos os arquivos sensíveis (`.env`, logs, etc.) estejam no `.gitignore` antes de gerar o ZIP.
+
+---
+
 <div align="center">
 
 **Desenvolvido com ❤️ usando .NET 9, React e Docker**
-
-⭐ Se este projeto foi útil, considere dar uma estrela!
 
 </div>

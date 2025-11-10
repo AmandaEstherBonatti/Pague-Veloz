@@ -522,6 +522,10 @@ Temporary Items
 *.backup
 *.old
 
+# Arquivos ZIP de submissão (gerados pelos scripts)
+pagueveloz-challenge.zip
+*.challenge.zip
+
 # ============================================
 # Build e Distribuição
 # ============================================
