@@ -1,0 +1,114 @@
+version: '3.8'
+
+services:
+  # SQL Server Database
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: pagueveloz-db
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${DB_PASSWORD:-PagueVeloz@2024!Strong}
+      - MSSQL_PID=Developer
+    ports:
+      - "${DB_PORT:-1433}:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - pagueveloz-network
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P '${DB_PASSWORD:-PagueVeloz@2024!Strong}' -Q 'SELECT 1' || exit 1
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  # API Service (stateless - can be scaled horizontally)
+  api:
+    build:
+      context: ./PagueVeloz
+      dockerfile: Dockerfile
+      args:
+        - BUILD_CONFIGURATION=Release
+    # Remove container_name to allow scaling
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=PagueVelozDb;User Id=sa;Password=${DB_PASSWORD:-PagueVeloz@2024!Strong};TrustServerCertificate=True;MultipleActiveResultSets=true;Pooling=true;Max Pool Size=100;Min Pool Size=5
+      - Jwt__SecretKey=${JWT_SECRET_KEY:-YourSuperSecretKeyThatShouldBeAtLeast32CharactersLongForProduction!}
+      - Jwt__Issuer=${JWT_ISSUER:-PagueVeloz}
+      - Jwt__Audience=${JWT_AUDIENCE:-PagueVelozUsers}
+      - Jwt__ExpirationMinutes=${JWT_EXPIRATION_MINUTES:-60}
+      - ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
+    # Remove ports mapping - only expose through nginx
+    volumes:
+      - ./logs:/app/logs
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    networks:
+      - pagueveloz-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+
+  # Nginx Load Balancer / Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: pagueveloz-nginx
+    ports:
+      - "${NGINX_HTTP_PORT:-80}:80"
+      - "${NGINX_HTTPS_PORT:-443}:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+    depends_on:
+      - api
+    networks:
+      - pagueveloz-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+volumes:
+  sqlserver_data:
+    driver: local
+
+networks:
+  pagueveloz-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16

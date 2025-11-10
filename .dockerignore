@@ -1,0 +1,61 @@
+# Build artifacts
+**/bin/
+**/obj/
+**/out/
+**/.vs/
+**/.vscode/
+**/.idea/
+
+# Test files
+**/*Tests/
+**/*.Tests/
+**/test/
+**/tests/
+
+# Logs
+**/logs/
+*.log
+
+# Docker files (except Dockerfile)
+**/docker-compose*.yml
+**/.dockerignore
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+**/*.md
+!README.md
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.cache
+
+# NuGet
+**/packages/
+**/*.nupkg
+
+# Other
+node_modules/
+*.user
+*.suo
+

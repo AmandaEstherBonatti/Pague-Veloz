@@ -1,0 +1,17 @@
+version: '3.8'
+
+# Configuração para escalar para múltiplas instâncias
+# Use: docker-compose -f docker-compose.yml -f docker-compose.scale.yml up -d
+
+services:
+  api:
+    deploy:
+      replicas: 5  # 5 instâncias da API
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 768M
+        reservations:
+          cpus: '0.75'
+          memory: 384M
+

@@ -1,0 +1,15 @@
+version: '3.8'
+
+# Override para desenvolvimento local
+# Este arquivo é automaticamente usado pelo docker-compose
+
+services:
+  api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "8080:8080"  # Expor porta para desenvolvimento
+    volumes:
+      - ./logs:/app/logs
+    deploy:
+      replicas: 1  # Apenas 1 instância em desenvolvimento
